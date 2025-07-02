@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Confession Booth</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🧠 AI Confession Booth</h1>
+        <form id="confessionForm">
+            <input type="text" id="confessionInput" name="confession" placeholder="Confess your coding sin..." required>
+            <button type="submit">Confess</button>
+        </form>
+        <div id="response"></div>
+        <button id="toggleDark">Toggle Dark Mode</button>
+        <h2>🕵️ Confession Hall of Fame</h2>
+        <ul id="history">
+        {% for item in history %}
+            <li>
+                <b>Confession:</b> {{ item.confession }}<br>
+                <b>AI:</b> {{ item.reply }}
+                {% if item.meme %}
+                    <img src="{{ item.meme }}" alt="meme" style="max-width:200px;display:block;">
+                {% endif %}
+            </li>
+        {% endfor %}
+        </ul>
+    </div>
+    <script>
+        document.getElementById('confessionForm').onsubmit = async function(e) {
+            e.preventDefault();
+            let confession = document.getElementById('confessionInput').value;
+            let responseDiv = document.getElementById('response');
+            responseDiv.innerHTML = "Thinking...";
+            fetch('/confess', {
+                method: 'POST',
+                body: new URLSearchParams({confession: confession}),
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+            })
+            .then(res => res.json())
+            .then(data => {
+                responseDiv.innerHTML = `<b>${data.reply}</b>`;
+                if(data.meme){
+                    responseDiv.innerHTML += `<br><img src="${data.meme}" style="max-width:200px;">`;
+                }
+                setTimeout(()=>window.location.reload(), 1000); // Refresh to update Hall of Fame
+            });
+        };
+        // Dark mode toggle
+        document.getElementById('toggleDark').onclick = function() {
+            let html = document.documentElement;
+            if(html.getAttribute('data-theme') === 'dark'){
+                html.setAttribute('data-theme', 'light');
+            } else {
+                html.setAttribute('data-theme', 'dark');
+            }
+        };
+    </script>
+</body>
+</html>
